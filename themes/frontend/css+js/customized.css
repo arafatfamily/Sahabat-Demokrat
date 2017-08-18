@@ -1,0 +1,40 @@
+#content {
+	padding-top: 0.5rem;
+	margin-bottom: auto;
+}
+
+#content .small-12 {
+	background-color: #D3D3D3;
+}
+
+#main {
+	background-color: #FFFFFF;
+}
+
+#sidebar {	
+    background-color: #D3D3D3;
+    box-shadow: -2px 0px 1px 0px black;
+}
+
+.video {
+	width: 25em;
+    height: 500px;
+    max-width: 25em;
+    margin: 0 auto;
+    margin-bottom: 0px;
+    position: absolute;
+}
+
+.page-title {
+	margin-bottom: 1.5rem !important;
+	padding-bottom: 0.5rem !important;
+}
+
+.page-title h2 {
+	margin-top: 0.3125rem;
+	margin-bottom: 0.3125rem;
+}
+
+select:disabled {
+    background: #dddddd;
+}
