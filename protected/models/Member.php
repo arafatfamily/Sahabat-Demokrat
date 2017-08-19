@@ -210,7 +210,12 @@ class Member extends CActiveRecord {
     }
 	
 	public static function getLvlPosisiJabatan($id, $param) {
-		$sql = "SELECT DISTINCT mb.id,mb.member_name AS name,mp.id AS mpos_id,mp.status_position AS sts_pos,pl.level as id_lvl,pl.desc AS level,ps.id_posisi,ps.name as posisi,pa.jab_id as id_jabatan,pa.jabatan FROM member mb INNER JOIN member_position mp ON mp.member_id=mb.id INNER JOIN position_lvl pl ON pl.level=mp.level INNER JOIN position ps ON ps.id_posisi=mp.position INNER JOIN position_as pa ON pa.jab_id=mp.position_as WHERE mb.id='".$id."' AND mp.status_position='UTAMA'";
+		$sql = "SELECT DISTINCT mb.id,mb.member_name AS name,mp.id AS mpos_id,mp.status_position AS sts_pos,pl.level AS id_lvl,pl.desc AS LEVEL,ps.id_posisi,ps.name AS posisi,pa.jab_id AS id_jabatan,pa.jabatan FROM member mb "
+			 . "INNER JOIN member_position mp ON mp.member_id=mb.id "
+			 . "INNER JOIN pos_lokasi pl ON pl.level=mp.level "
+			 . "INNER JOIN pos_level ps ON ps.id_posisi=mp.position "
+			 . "INNER JOIN pos_as pa ON pa.jab_id=mp.position_as "
+			 . "WHERE mb.id='".$id."' AND mp.status_position='UTAMA'";
         $rows = Yii::app()->db->createCommand($sql)->queryAll();
 
         $id_pos = "";
@@ -313,7 +318,12 @@ class Member extends CActiveRecord {
     }
 	
 	public static function getLvlPosisiJabatan2($id, $param) {
-		$sql = "SELECT DISTINCT mb.id,mb.member_name AS name,mp.id AS mpos_id,mp.status_position AS sts_pos,pl.level as id_lvl,pl.desc AS level,ps.id_posisi,ps.name as posisi,pa.jab_id as id_jabatan,pa.jabatan FROM member mb INNER JOIN member_position mp ON mp.member_id=mb.id INNER JOIN position_lvl pl ON pl.level=mp.level INNER JOIN position ps ON ps.id_posisi=mp.position INNER JOIN position_as pa ON pa.jab_id=mp.position_as WHERE mb.id='".$id."' AND mp.status_position='KEDUA'";
+		$sql = "SELECT DISTINCT mb.id,mb.member_name AS name,mp.id AS mpos_id,mp.status_position AS sts_pos,pl.level AS id_lvl,pl.desc AS LEVEL,ps.id_posisi,ps.name AS posisi,pa.jab_id AS id_jabatan,pa.jabatan FROM member mb "
+			 . "INNER JOIN member_position mp ON mp.member_id=mb.id "
+			 . "INNER JOIN pos_lokasi pl ON pl.level=mp.level "
+			 . "INNER JOIN pos_level ps ON ps.id_posisi=mp.position "
+			 . "INNER JOIN pos_as pa ON pa.jab_id=mp.position_as "
+			 . "WHERE mb.id='".$id."' AND mp.status_position='KEDUA'";
         $rows = Yii::app()->db->createCommand($sql)->queryAll();
 
         $id_pos = "";
@@ -377,6 +387,38 @@ class Member extends CActiveRecord {
             $nextKode = "000100";
         return $nextKode;
     }
+	
+	public static function CountMemberRegion($RegKode) {
+		switch(strlen($RegKode)) {
+			case 2:
+				$sql = "SELECT K.id_kab as id, K.nama AS name, count(substr(member_sub_district_id,1,4)) as total FROM kabupaten K "
+					 . "INNER JOIN member M ON SUBSTR(M.member_sub_district_id, 1, 4)=K.id_kab "
+					 . "WHERE K.id_prov='$RegKode' GROUP BY K.id_kab ORDER BY total DESC";
+				break;
+			case 4:
+				$sql = "SELECT K.id_kec as id, K.nama AS name, count(substr(member_sub_district_id,1,6)) as total FROM kecamatan K "
+					 . "INNER JOIN member M ON SUBSTR(M.member_sub_district_id, 1, 6)=K.id_kec "
+					 . "WHERE K.id_kab='$RegKode' GROUP BY K.id_kec ORDER BY total DESC";
+				break;
+			case 6:
+				$sql = "SELECT K.id_kel as id, K.nama AS name, count(member_sub_district_id) as total FROM kelurahan K "
+					 . "INNER JOIN member M ON M.member_sub_district_id=K.id_kel "
+					 . "WHERE K.id_kec='$RegKode' GROUP BY K.id_kel ORDER BY total DESC";
+				break;
+			default:
+				$sql = "SELECT P.id_prov AS id, P.nama AS name, count(substr(member_sub_district_id,1,2)) as total FROM provinsi P "
+					 . "INNER JOIN member M ON SUBSTR(M.member_sub_district_id, 1, 2)=P.id_prov GROUP BY P.id_prov ORDER BY total DESC";
+				break;
+		}
+		
+		$Total =  Yii::app()->db->createCommand($sql)->queryAll();
+		$dataProvider = new CArrayDataProvider($Total, array(
+			'keyField' => 'id',
+			'pagination' => false
+		));
+		
+		return $dataProvider;
+	}
 	
 	public function search() {
 		$criteria=new CDbCriteria;

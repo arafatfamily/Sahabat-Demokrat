@@ -36,7 +36,7 @@ class MemberController extends Controller {
 				'expression' => '$user->getAkses(\'38\',\'19\') || $user->isSuperadmin()','users'=>array('@'),),
 			array('allow','actions'=>array('struktur'),
 				'expression' => '$user->getAkses(\'41\',\'15\') || $user->isSuperadmin()','users'=>array('@'),),
-			array('allow','actions'=>array('export'),
+			array('allow','actions'=>array('export','exportRekap'),
 				'expression' => '$user->getAkses(\'7\',\'2\') || $user->isSuperadmin()','users'=>array('@'),),
 			array('allow','actions'=>array('rekap'),
 				'expression' => '$user->getAkses(\'50\',\'2\') || $user->isSuperadmin()','users'=>array('@'),),
@@ -70,17 +70,62 @@ class MemberController extends Controller {
 		}
 	}
 	
-	public function actionRekap() {
-		$sql = "select p.id_prov, p.nama, count(substr(member_sub_district_id,1,2)) as total FROM provinsi p "
-			 . "inner join member m ON substr(member_sub_district_id,1,2)=p.id_prov GROUP BY p.id_prov ORDER BY total DESC";
-		$rows=Yii::app()->db->createCommand($sql)->queryAll();
-		$dataProvider=new CArrayDataProvider($rows, array(
-			'keyField'=>'id_prov',
-			'pagination'=>false
-		));
+	public function actionRekap($id = null) {
+		switch(strlen($id)) {
+			case 2:
+				$model=Provinsi::model()->findByPk($id);
+				break;
+			case 4:
+				$model=Kabupaten::model()->findByPk($id);
+				break;
+			case 6:
+				$model=Kecamatan::model()->findByPk($id);
+				break;
+			default:
+				$model=null;
+				break;
+		}
 		$this->render('rekapKader',array(
-			'dataProvider'=> $dataProvider
+			'dataProvider'=> Member::CountMemberRegion($id),
+			'model'=>$model
 		));
+	}
+	
+	public function actionExportRekap($id) {
+		Yii::import('ext.phpexcel.XPHPExcel');
+		ini_set('memory_limit', '2048M');		
+		ini_set('max_execution_time', '180000');
+		$dataProvider=Member::CountMemberRegion($id);
+		$objPHPExcel=XPHPExcel::createPHPExcel(); $i = 2;
+		$objPHPExcel->getProperties()->setCreator("Yasir Arafat, A.Md")
+						 ->setLastModifiedBy("BPOKK DPP PARTAI DEMOKRAT")
+						 ->setTitle("Rekap Jumlah Kader Partai Demokrat(".Globals::bulan(date('m')).")")
+						 ->setSubject("Office 2007 Document")
+						 ->setDescription("Laporan Jumlah Kader sahabat demokrat.")
+						 ->setKeywords("Rekap Jumlah kader")
+						 ->setCategory("Laporan SAHABAT DEMOKRAT");
+		$objPHPExcel->getActiveSheet()->setCellValue('A1','NAMA REGION');
+        $objPHPExcel->getActiveSheet()->setCellValue('B1','JUMLAH KADER');
+		foreach($dataProvider->data as $data) {
+			$objPHPExcel->setActiveSheetIndex(0)
+						->setCellValue('A'.$i,$data['name'])
+						->setCellValue('B'.$i,$data['total']);
+						$i++;
+		}
+		$objPHPExcel->getActiveSheet()->setTitle('Jumlah Kader') ;
+		$objPHPExcel->setActiveSheetIndex(0);
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment;filename="Rekap Data Kader('.Globals::bulan(date('m')).').xlsx"');
+		header('Cache-Control: max-age=0');
+		header('Cache-Control: max-age=1');
+		header ('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); 
+		header ('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT'); 
+		header ('Cache-Control: cache, must-revalidate'); 
+		header ('Pragma: public'); 
+		
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+		$objWriter->save('php://output');
+		Yii::app()->end();		
 	}
 	
 	public function actionExport() {

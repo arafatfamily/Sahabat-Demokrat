@@ -1,12 +1,12 @@
 <div class="col-lg-12">
 <?php if (!Yii::app()->user->isSuperadmin()) { ?>
-	<div class="alert alert-error alert-dismissible fade in">
+	<!--div class="alert alert-error alert-dismissible fade in">
 		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button>
 		<strong>WEBMASTER MESSAGE :</strong> Jadwal Pembaruan <strong>{ENGINE}</strong> Sistem Keanggotaan !</br>
 		Sehubungan dengan adanya update sistem engine pada web dan/atau server keanggotaan PARTAI DEMOKRAT, maka server akan mengalami gangguan selama (±) 6 Jam.</br>
 		Yang terjadwal pada hari Kamis 17 Agustus 2017 Pukul 00.00 - 06.00.</br>
 		<strong>code:msg[i]</strong> Webmaster.
-	</div>
+	</div-->
 <?php } ?>
 	<section class="box inverted">
 		<header class="panel_header">

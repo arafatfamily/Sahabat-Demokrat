@@ -15,6 +15,8 @@ class _apiController extends Controller {
 	private function cUrlMasking($extUrl) {
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, 'http://sms.rosihanari.net:8080/web2sms/api/sendSMS.aspx?username='.$extUrl);
+		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+		curl_setopt($curl, CURLOPT_ENCODING, 'gzip');
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 		$result = curl_exec($curl);
 		curl_close($curl);
